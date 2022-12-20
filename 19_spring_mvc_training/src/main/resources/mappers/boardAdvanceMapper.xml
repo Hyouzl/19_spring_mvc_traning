@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="boardAdvanceMapper">
+
+	<select id="selectBoardCnt" parameterType="hashmap" resultType="int">
+		<choose>
+			<when test='searchKeyword.equals("total")'>
+				<choose>
+					<when test='searchWord.equals("")'>
+						SELECT 
+								COUNT(*) 
+						FROM 
+								T_SPRING_BOARD_ADVANCE
+					</when>
+					<otherwise>
+						SELECT 
+								COUNT(*) 
+						FROM 
+								T_SPRING_BOARD_ADVANCE
+						WHERE
+								SUBJECT LIKE CONCAT('%',#{searchWord},'%') OR 
+								WRITER LIKE CONCAT('%',#{searchWord},'%')
+					</otherwise>
+				</choose>
+			</when>
+			<otherwise>
+				SELECT 
+						COUNT(*) 
+				FROM 
+						T_SPRING_BOARD_ADVANCE 
+				WHERE
+					<if test='searchKeyword.equals("writer")'>
+						WRITER LIKE CONCAT('%' , #{searchWord} , '%')
+					</if>
+					<if test='searchKeyword.equals("subject")'>
+						SUBJECT LIKE CONCAT('%' , #{searchWord} , '%')
+					</if>
+			</otherwise>
+		</choose>	
+	</select>
+
+	
+	<select id="selectListBoard" parameterType="hashmap" resultType="BoardAdvanceDto">
+		<choose>
+			<when test='searchKeyword.equals("total")'>
+				<choose>
+					<when test='searchWord.equals("")'>
+						SELECT
+								*
+						FROM
+								T_SPRING_BOARD_ADVANCE
+						ORDER BY
+								REF DESC,
+								RE_STEP 
+						LIMIT 
+								#{startBoardIdx} , #{onePageViewCount}
+					</when>
+					<otherwise>
+						SELECT 
+								*
+						FROM
+								T_SPRING_BOARD_ADVANCE
+						WHERE
+								SUBJECT LIKE CONCAT('%' , #{searchWord} , '%') OR
+								WRITER LIKE CONCAT('%' , #{searchWord} , '%')
+						ORDER BY
+								REF DESC,
+								RE_STEP  
+						LIMIT 
+								#{startBoardIdx},#{onePageViewCount}
+					</otherwise>
+				</choose>
+			</when>
+			<otherwise>
+				SELECT
+						*
+				FROM
+						T_SPRING_BOARD_ADVANCE
+				WHERE
+					<if test='searchKeyword.equals("writer")'>
+						WRITER LIKE CONCAT('%' , #{searchWord} , '%')
+					</if>
+					<if test='searchKeyword.equals("subject")'>
+						SUBJECT LIKE CONCAT('%' , #{searchWord} , '%')
+					</if>
+				ORDER BY
+						REF DESC,
+						RE_STEP 
+				LIMIT
+						#{startBoardIdx} , #{onePageViewCount}
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insertBoard" parameterType="BoardAdvanceDto">
+		INSERT INTO 
+				T_SPRING_BOARD_ADVANCE 
+		VALUES (
+				(SELECT 
+						IFNULL(MAX(NUM) + 1 , 1)
+				FROM 
+						T_SPRING_BOARD_ADVANCE AS B), 
+				#{writer}, 
+				#{email}, 
+				#{subject}, 
+				#{password}, 
+				now(),
+				(SELECT 
+						IFNULL(MAX(REF) + 1 , 1) 
+				FROM 
+						T_SPRING_BOARD_ADVANCE AS B),
+				1, 
+				1, 
+				0, 
+				#{content})
+	</insert>
+
+	
+	<select id="selectOneBoard" parameterType="int" resultType="BoardAdvanceDto">
+		SELECT
+				*
+		FROM
+				T_SPRING_BOARD_ADVANCE
+		WHERE
+				NUM = #{num}
+	</select>
+ 
+ 	
+	<update id="updateBoard" parameterType="BoardAdvanceDto">
+		UPDATE 
+				T_SPRING_BOARD_ADVANCE 
+		SET 
+				SUBJECT = #{subject}, 
+				CONTENT = #{content} 
+		WHERE 
+				NUM = #{num}
+	</update>
+
+	
+	<update id="updateBoardReplyStep"  parameterType="BoardAdvanceDto">
+		<![CDATA[
+			UPDATE 
+					T_SPRING_BOARD_ADVANCE 
+			SET 
+					RE_STEP = RE_STEP + 1
+			WHERE 
+					REF = #{ref} AND RE_STEP > #{reStep}
+		]]>
+	</update>
+	
+	
+	<delete id="deleteBoard" parameterType="int">
+		DELETE FROM 
+				T_SPRING_BOARD_ADVANCE 
+		WHERE 
+				NUM = #{num}
+	</delete>
+	
+	
+	<select id="selectOneUserCheck"  parameterType="int" resultType="String">
+		SELECT
+				PASSWORD AS password
+		FROM
+				T_SPRING_BOARD_ADVANCE
+		WHERE
+				NUM = #{num}
+	</select>
+	
+	
+	<update id="updateReadCount"  parameterType="int">
+		UPDATE
+				T_SPRING_BOARD_ADVANCE
+		SET
+				READ_COUNT = READ_COUNT + 1
+		WHERE
+				NUM = #{num}
+	</update>
+	
+	
+	<insert id="insertReplyBoard" parameterType="BoardAdvanceDto">
+		INSERT INTO 
+				T_SPRING_BOARD_ADVANCE
+		VALUES (
+				(SELECT 
+					MAX(NUM) + 1 
+				FROM 
+					T_SPRING_BOARD_ADVANCE AS B),
+			    #{writer},
+			    #{email},
+			    #{subject},
+			    #{password},
+			    NOW(),
+			    #{ref},
+			    #{reStep} + 1,
+			    #{reLevel} + 1,
+			    0,
+			    #{content})
+	</insert>
+	
+	
+	<insert id="insertDummyData">
+			INSERT INTO 
+					T_SPRING_BOARD_ADVANCE 
+			VALUES
+			<foreach collection="list" item="boardAdvanceDto" separator=",">
+				(
+					#{boardAdvanceDto.num},
+					#{boardAdvanceDto.writer}, 
+					#{boardAdvanceDto.email}, 
+					#{boardAdvanceDto.subject}, 
+					#{boardAdvanceDto.password}, 
+					NOW(), 
+					#{boardAdvanceDto.ref}, 
+					#{boardAdvanceDto.reStep}, 
+					#{boardAdvanceDto.reLevel}, 
+					#{boardAdvanceDto.readCount},
+					#{boardAdvanceDto.content}
+				)
+			</foreach>
+	</insert>
+	
+ </mapper>

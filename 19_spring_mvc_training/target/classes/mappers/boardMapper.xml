@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="board">
+
+	<insert id="insertBoard" parameterType="BoardDto">
+		
+		INSERT INTO T_SPRING_BOARD (
+				WRITER,
+				EMAIL,
+				SUBJECT,
+				PASSWORD,
+				REG_DATE,
+				READ_COUNT,
+				CONTENT
+		)
+		VALUES (
+				#{writer},
+				#{email},
+				#{subject},
+				#{password},
+				NOW(),
+				0,
+				#{content}
+		)
+		
+	</insert>
+
+	<select id="selectListBoard" resultType="BoardDto">
+		
+		SELECT 
+				*
+		FROM
+				T_SPRING_BOARD
+	
+	</select>
+
+	<select id="selectOneBoard" parameterType="int" resultType="BoardDto">
+		
+		SELECT
+				*
+		FROM
+				T_SPRING_BOARD
+		WHERE
+				NUM = #{num}
+	
+	</select>
+
+	<update id="updateReadCount" parameterType="int">
+		
+		UPDATE
+				T_SPRING_BOARD
+		SET
+				READ_COUNT = READ_COUNT + 1
+		WHERE
+				NUM = #{num}
+				
+	</update>
+	
+	
+	<select id="selectOneValidateUserCheck" parameterType="BoardDto" resultType="BoardDto">
+		
+		SELECT
+				*
+		FROM
+				T_SPRING_BOARD
+		WHERE
+				NUM = #{num} AND PASSWORD = #{password}
+	
+	</select>
+	
+	<update id="updateBoard" parameterType="BoardDto">
+	
+		UPDATE
+				T_SPRING_BOARD
+		SET
+				SUBJECT = #{subject},
+				CONTENT = #{content}
+		WHERE
+				NUM = #{num}
+				
+	</update>
+	
+	<delete id="deleteBoard" parameterType="int">
+		DELETE FROM 
+				T_SPRING_BOARD
+		WHERE
+				NUM = #{num}
+	</delete>
+
+</mapper>
+
