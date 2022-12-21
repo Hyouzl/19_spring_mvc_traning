@@ -40,7 +40,7 @@ public class BoardAdvanceController {
 		
 		
 		// 페이지의 시작 게시글 인덱스
-		int startBoardIdx =  (currentPageNumber -1) * onePageViewCount + 1;
+		int startBoardIdx =  (currentPageNumber -1) * onePageViewCount;
 		if (currentPageNumber == 1) startBoardIdx = 0;
 		
 		
